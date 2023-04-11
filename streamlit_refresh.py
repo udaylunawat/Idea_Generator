@@ -9,7 +9,7 @@ import openai
 
 if 'chat_messages' not in st.session_state:
     st.session_state.chat_messages = [
-    {"role": "system", "content": "You are an idea generator that always responds in JSON format."}
+    {"role": "assistant", "content": "You are an idea generator that always responds in JSON format inside a list."}
     ]
 
 
@@ -45,33 +45,40 @@ def modify_prompt(structure, selected_items):
     for item in structure:
         if item['name'] in selected_items:
             rules_dict.update({item['name']:"content"})
-    additional_rule+=f"{rules_dict}\n\nThe response:"
+    additional_rule+=f"{[rules_dict]}\n\nThe response:"
     return f"{template_prompt}\n{rules_prompt}\n{additional_rule}"
 
 # def update_card(card_name, updated_info):
 #     st.session_state.idea_json[card_name] = updated_info
 
-def get_idea_sirji(prompt_with_idea, model, max_tokens, temperature):
-    st.write(st.session_state.chat_messages)
+def get_idea_sirji(model_name, max_tokens, temperature):
     # st.write(prompt_with_idea)
     # st.write(messages['content'], unsafe_allow_html=True)
-    gpt_response =  get_gpt_response(idea_prompt = f"\nHere's the idea [{idea}]\nThe Prompt is:")
-    st.write(gpt_response['choices'][0]['message'])
+    gpt_response =  get_gpt_response(model_name, max_tokens, temperature)
+    # st.write(gpt_response)
     output_text = gpt_response['choices'][0]['message']['content']
+    # st.write(output_text)
+
+    start_index = output_text.find("[")
+    end_index = output_text.rfind("]")
+
+    if start_index != -1 and end_index != -1:
+        output_text = output_text[start_index:end_index+1]
+
+    try:
+        output_text = literal_eval(output_text.replace("'", "\""))
+        if isinstance(output_text, list):
+            output_text = output_text[0]
+    except ValueError:
+        pass
+
     finish_reason = gpt_response['choices'][0]['finish_reason']
     if finish_reason == 'length':
         st.warning("Returned output incomplete! Select fewer items!")
     elif finish_reason == 'stop':
-        output_text = literal_eval(output_text.replace("'", "\""))
-        return output_text[0]
+        st.session_state.idea_json = output_text
 
-def print_json_columns():
-    columns = st.columns(3)
-    for i, (key, value) in enumerate(st.session_state.idea_json.items()):
-        with columns[i % 3]:
-            st.write(f"## {key}")
-            st.write(value)
-            st.write("---")
+    return output_text
 
 models = ["gpt-3.5-turbo"]
 default_model = models[0]
@@ -82,7 +89,7 @@ with open('business_structure.json', 'r') as f:
 st.sidebar.write('Select the items you want to include in your business model')
 selected_items = st.sidebar.multiselect("Select items:", [item['name'] for item in structure], default=['Customers', 'Processes', 'Pains', 'Jobs to be Done'])
 if 'idea_json' not in st.session_state:
-    st.session_state.idea_json =  [{item: '' for item in selected_items}]
+    st.session_state.idea_json =  {item: '' for item in selected_items}
 
 # st.write(st.session_state.idea_json)
 model_name = st.sidebar.selectbox('Select the OpenAI model to use:', models, index=0)
@@ -99,30 +106,59 @@ stream = st.sidebar.checkbox('Stream the output', value=False)
 st.title('Business Model Generator')
 st.write('''Enter your business idea below and select the model and settings for the generator.
 \nThen click "Generate" to create a business model structure.''', unsafe_allow_html=True)
-idea = st.text_input('Enter your business idea')
-prompt_with_idea = modify_prompt(idea, structure, selected_items)
+
+prompt_with_rules = modify_prompt(structure, selected_items)
+if len(st.session_state.chat_messages)<=1:
+    st.session_state.chat_messages.append({"role": "assistant", "content": prompt_with_rules})
 # TODO: Try various roles like system, assistant, user
-st.session_state.chat_messages.append({"role": "user", "content": prompt_with_idea})
+# c1, c2 = st.columns(2)
+# with c1:
+#     st.write(st.session_state.chat_messages)
+# with c2:
+#     st.json(st.session_state.idea_json)
+idea = st.text_input('Enter your business idea')
+
 
 generate = st.button("Generate!")
-if generate:
-    with st.spinner('Wait for it...'):
-        st.session_state.idea_json = get_idea_sirji(prompt_with_idea, structure, selected_items, default_model, temperature, stream)
-        # info_dict
-    if st.session_state.idea_json:
-        st.success("Done!")
-        # Display the information as cards with three cards per row
-        print_json_columns()
+if idea:
+    st.session_state.chat_messages.append({"role": "user", "content": f"The business idea is [{idea}]\n\n The JSON prompt:"})
+    if generate:
+        with st.spinner('Wait for it...'):
+            output = get_idea_sirji(model_name, max_tokens, temperature)
+            st.session_state.idea_json = output
+            st.success("Done!")
+st.write(f"## Original Response")
+if st.session_state.idea_json:
+    # Display the information as cards with three cards per row
+    columns = st.columns(3)
+    for i, (key, value) in enumerate(st.session_state.idea_json.items()):
+        with columns[i % 3]:
+            st.write(f"## {key}")
+            st.info(value)
+            st.write("---")
 
-regen_ideas = st.sidebar.multiselect("Select items to regenerate:", [item['name'] for item in structure], default=[], help="Regenrates only selected ideas! Doesn't changes existing ideas.")
+
+regen_ideas = st.sidebar.multiselect("Select items to regenerate:", [item['name'] for item in structure], default=selected_items, help="Regenrates only selected ideas! Doesn't changes existing ideas.")
 if st.sidebar.button("Regenerate Ideas!"):
     if regen_ideas:
         update_message = f"Give new responses for these categories:[{regen_ideas}]\nFollow the same JSON syntax as before."
         st.session_state.chat_messages.append({"role": "user", "content": update_message})
-        idea_json = get_idea_sirji(idea, structure, selected_items, default_model, temperature, stream)
-        for i,v in idea_json.values():
-            st.write(i,v)
-        print_json_columns()
+        idea_json = get_idea_sirji(model_name, max_tokens, temperature)
+        # st.write(idea_json)
+        for k,v in idea_json.items():
+            st.session_state.idea_json[k]=v
+        # Display the information as cards with three cards per row
+    try:
+        st.write(f"## Refreshed Response")
+        columns = st.columns(3)
+        for i, (key, value) in enumerate(st.session_state.idea_json.items()):
+            with columns[i % 3]:
+                st.write(f"## {key}")
+                st.info(value)
+                st.write("---")
+        st.success("Refreshed!")
+    except:
+        pass
 
 
     # if st.session_state.idea_json:

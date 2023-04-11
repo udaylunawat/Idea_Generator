@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os, json
 from ast import literal_eval
 import openai
+import threading
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 # model_list = openai.Model.list()
@@ -15,9 +16,9 @@ def get_gpt_response(final_prompt):
         response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": final_prompt}],
-        max_tokens=700,
+        max_tokens=2000,
         temperature=0.7,
-        stream=False
+        stream=True
         )
 
         return response
@@ -52,28 +53,20 @@ def get_idea_sirji():
     prompt_with_idea = modify_prompt(idea, structure)
     print(f"\nPrompt: {prompt_with_idea}\n\n")
     gpt_response =  get_gpt_response(prompt_with_idea)
-    output_text = gpt_response['choices'][0]['message']['content']
-    finish_reason = gpt_response['choices'][0]['finish_reason']
-    if finish_reason == 'stop':
-        print("\nValid response in first attempt!\n")
+    collected_messages = []
 
-    if finish_reason == 'length':
-        print("\nInvalid response in First attempt, Splitting business structure for another shot.\n")
-        while finish_reason!='stop':
-            response_list = []
-            for i in range(0, len_structure+1, len_structure//2):
-                print(f"{i}, {(i+len_structure//2)+1}")
-                prompt_with_idea = modify_prompt(idea, structure[i:(i+len_structure//2)+1])
-                gpt_response =  get_gpt_response(prompt_with_idea)
-                print(gpt_response)
-                output_text = gpt_response['choices'][0]['message']['content']
-                finish_reason = gpt_response['choices'][0]['finish_reason']
-                response_list.extend(literal_eval(output_text.replace("'", "\""))[0])
-            print(response_list)
-            return response_list[0]
-    elif finish_reason == 'stop':
-        print(gpt_response)
-        return literal_eval(output_text.replace("'", "\""))[0]
+    def process_response():
+        for chunk in gpt_response:
+            try:
+                chunk_message = chunk['choices'][0]['delta']  # extract the message
+                collected_messages.append(chunk_message)  # save the message
+                print(chunk_message["content"], end="")
+            except KeyError:
+                print("Error")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    # Start a new thread to process the response
+    thread = threading.Thread(target=process_response)
+    thread.start()
+
+    # Return an empty response to the client
+    return '', 200

@@ -1,0 +1,12 @@
+
+Can you fill out the structure according to the and & description of every field?
+
+Only reply with name as key and content as value, you can skip description in the reply.
+
+Fill the content & Be a bit descriptive. Value should never be NULL or "" or "None".
+
+Describe each category in approximate 25 words.
+
+Don't forget comma between each key, value pair. Include all items in the above model structure, don't skip any.
+
+Do not include any explanations, only provide a dictonaries nested inside a list response following this format without deviation.

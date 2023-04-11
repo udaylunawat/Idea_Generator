@@ -1,0 +1,87 @@
+[
+    {
+     "name": "Customers",
+     "description": "Who are our sales targets and will purchase our offerings?",
+     "content": ""
+    },
+    {
+     "name": "Brand Message",
+     "description": "How should our brand be perceived in order to sell our offerings?",
+     "content": ""
+    },
+    {
+     "name": "Offerings",
+     "description": "What combination of products and services do we offer our target groups?",
+     "content": ""
+    },
+    {
+     "name": "Processes",
+     "description": "Which internal processes do we need to provide in order to create and deliver our offerings?",
+     "content": ""
+    },
+    {
+     "name": "R&D Partner",
+     "description": "Who are our external partners in order to create our offerings?",
+     "content": ""
+    },
+    {
+     "name": "Jobs to be Done",
+     "description": "What are our target groups trying to accomplish functional, emotional, or social terms?",
+     "content": ""
+    },
+    {
+     "name": "Pains",
+     "description": "What constraints do our target groups have to get the job done?",
+     "content": ""
+    },
+    {
+     "name": "Core Values",
+     "description": "What values do our target groups receive after having experienced our offerings?",
+     "content": ""
+    },
+    {
+     "name": "Gains",
+     "description": "What unexpected benefits do our target groups have to be excited about their job?",
+     "content": ""
+    },
+    {
+     "name": "Operating Partner",
+     "description": "Who are our external partners in order to operate and deliver our offerings?",
+     "content": ""
+    },
+    {
+     "name": "Unfair Advantage",
+     "description": "What do we do better than our competitors and is difficult to copy?",
+     "content": ""
+    },
+    {
+     "name": "Channels",
+     "description": "Through which channels do we reach our target groups?",
+     "content": ""
+    },
+    {
+     "name": "Resources",
+     "description": "Which internal resources do we need to provide in order to create and deliver our offerings?",
+     "content": ""
+    },
+    {
+     "name": "Users",
+     "description": "Who will be using our offerings?",
+     "content": ""
+    },
+    {
+     "name": "Costs",
+     "description": "How much money do we need to spend to create, operate, and deliver the offerings?",
+     "content": ""
+    },
+    {
+     "name": "Pricing",
+     "description": "How much, when and how often do we charge our customers?",
+     "content": ""
+    },
+    {
+     "name": "Investments",
+     "description": "How much money do we need to spend before we earn?",
+     "content": ""
+    }
+]

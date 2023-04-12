@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>D3.js Force-Directed Graph Example</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+      rect {
+        stroke: #000000;
+        stroke-width: 2px;
+      }
+      text {
+        font-size: 14px;
+        fill: #000000;
+      }
+      .node {
+        cursor: move;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="800" height="600"></svg>
+
+    <script>
+      const data = {
+        nodes: [
+          { id: 0, sentence: "The quick brown fox jumps over the lazy dog." },
+          { id: 1, sentence: "Jackdaws love my big sphinx of quartz." },
+          { id: 2, sentence: "How vexingly quick daft zebras jump!" }
+        ],
+        links: [
+          { source: 0, target: 1 },
+          { source: 1, target: 2 },
+          { source: 2, target: 0 }
+        ]
+      };
+
+      const svg = d3.select("svg");
+      const width = +svg.attr("width");
+      const height = +svg.attr("height");
+
+      const simulation = d3.forceSimulation(data.nodes)
+        .force("link", d3.forceLink(data.links).id(d => d.id))
+        .force("charge", d3.forceManyBody().strength(-100))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+      const link = svg.append("g")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+        .selectAll("line")
+        .data(data.links)
+        .join("line");
+
+      const node = svg.append("g")
+        .attr("class", "nodes")
+        .selectAll("g")
+        .data(data.nodes)
+        .join("g")
+        .attr("class", "node")
+        .call(drag(simulation));
+
+      node.append("rect")
+        .attr("width", d => getTextWidth(d.sentence) + 20)
+        .attr("height", 60)
+        .attr("fill", "#ccc")
+        .attr("rx", 5)
+        .attr("ry", 5);
+
+      node.append("text")
+        .text(d => d.sentence)
+        .attr("x", 10)
+        .attr("y", 30);
+
+      simulation.on("tick", () => {
+        link
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+
+        node
+          .attr("transform", d => `translate(${d.x},${d.y})`);
+      });
+
+      function drag(simulation) {
+
+        function dragstarted(event, d) {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+          d.fx = event.x;
+          d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+          if (!event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }
+
+return d3.drag()
+  .on("start", dragstarted)
+  .on("drag", dragged)
+  .on("end", dragended);
+}
+
+function getTextWidth(text) {
+// create a temporary text element to measure the width of the text
+const tempText = svg.append("text")
+  .text(text)
+  .attr("opacity", 0);
+
+const width = tempText.node().getComputedTextLength();
+
+// remove the temporary text element
+tempText.remove();
+
+return width;
+}
+</script>
+</body>
+</html>

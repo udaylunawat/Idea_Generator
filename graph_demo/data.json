@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Customers",
+    "category": "Customer"
+  },
+  {
+    "name": "Offerings",
+    "category": "Strategy"
+  },
+  {
+    "name": "Brand Message",
+    "category": "Customer"
+  },
+  {
+    "name": "Processes",
+    "category": "Operation"
+  }
+]

@@ -9,7 +9,7 @@
 - [ ] reduce tokens by giving them abbreviations
 
 - [ ] make mind map
-- [x] Deploy on Railway.io
+- [x] Deploy on Railway.io (https://ideagenerator-production.up.railway.app/)
 
 # Installation
 ```bash
@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 # Run locally
 ```bash
-streamlit run streamlit_card_refresh.py
+streamlit run streamlit_refresh.py
 ```
 
 # Roadmap

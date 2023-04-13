@@ -1,1 +1,4 @@
-Task: Fill out a JSON structure with fields named and described. Reply with a JSON response enclosed in [], with the name as the key and answer as the answer to description question as value. The answer should be descriptive and under 25 words, and never NULL or empty. Do not add any additional fields.
+Task: Fill out a JSON structure with fields named and described.
+Reply with a JSON response enclosed in [], with the name as the key and answer as the answer to description question as value.
+The answer should be descriptive and under 35 words, and never NULL or empty.
+Do not add any additional fields.
